@@ -1746,15 +1746,11 @@ function Public() {
     [err, E] = useState("");
   useEffect(() => {
     const host = location.hostname;
-    const n =
-      u ||
-      (host.endsWith(".localhost")
-        ? host.replace(".localhost", "").split(".")[0]
-        : host.split(".").length > 2
-          ? host.split(".")[0]
-          : null);
-    api
-      .get("/public/" + n)
+    const isSubdomainRequest = !u && host.split(".").length > 2;
+    const request = isSubdomainRequest
+      ? api.get("/public-host")
+      : api.get("/public/" + u);
+    request
       .then((r) => {
         const v = r.data.portfolio;
         P(v);

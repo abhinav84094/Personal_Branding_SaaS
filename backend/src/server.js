@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import auth from "./routes/auth.js";
 import portfolio from "./routes/portfolio.js";
 import billing from "./routes/billing.js";
+import { corsMiddleware } from "./middleware/corsMiddleware.js";
 import Portfolio from "./models/Portfolio.js";
 import PortfolioView from "./models/PortfolioView.js";
 import { validUsername, normalizeUsername } from "./utils/username.js";
@@ -27,6 +28,7 @@ app.use(
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   }),
 );
+app.use("/api", corsMiddleware);
 app.use(
   cors({
     origin: (origin, callback) => {
