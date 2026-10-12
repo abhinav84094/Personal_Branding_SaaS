@@ -196,11 +196,23 @@ r.get("/subscription", async (req, res, next) => {
       subscription.status = "expired";
       await subscription.save();
     }
+    const portfolio = await Portfolio.findOne({ ownerId: req.user._id })
+      .select("username status")
+      .lean();
+    const publicUrl =
+      subscription?.status === "active" &&
+      portfolio?.status === "published" &&
+      portfolio.username
+        ? process.env.NODE_ENV !== "production" && process.env.PUBLIC_BASE_URL
+          ? `${process.env.PUBLIC_BASE_URL}/p/${portfolio.username}`
+          : getPublicPortfolioUrl(portfolio.username)
+        : "";
     res.json({
       plans: getPlans(),
       publicBaseDomain: getPublicBaseDomain(),
       supportContacts: getSupportContacts(),
       subscription,
+      publicUrl,
     });
   } catch (e) {
     next(e);

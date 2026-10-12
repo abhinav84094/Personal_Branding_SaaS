@@ -7,6 +7,9 @@ import {
   Menu,
   Globe,
   Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
   Layers,
   Monitor,
   Tablet,
@@ -321,7 +324,7 @@ function GoogleSignIn({ onError }) {
         theme: "outline",
         size: "large",
         shape: "rectangular",
-        width: 340,
+        width: Math.min(340, ref.current.clientWidth || 340),
         text: "continue_with",
       });
     };
@@ -341,7 +344,9 @@ function GoogleSignIn({ onError }) {
 function LoginPage() {
   const nav = useNavigate(),
     [f, F] = useState({ email: "", password: "" }),
-    [err, E] = useState("");
+    [err, E] = useState(""),
+    [showPassword, SP] = useState(false);
+
   async function submit(e) {
     e.preventDefault();
     try {
@@ -351,51 +356,89 @@ function LoginPage() {
       E(x.response?.data?.message || "Email or password is incorrect.");
     }
   }
+
   return (
-    <div className="auth">
-      <Brand />
-      <form onSubmit={submit}>
-        <small className="eyebrow">WELCOME TO YOUR NEXT CHAPTER</small>
-        <h1>Sign in to your space.</h1>
-        <p>
-          New here? Continue with Google. We’ll help you finish setting up your
-          account.
-        </p>
-        <label>
-          Email address
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            value={f.email}
-            onChange={(e) => F({ ...f, email: e.target.value })}
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            autoComplete="current-password"
-            required
-            value={f.password}
-            onChange={(e) => F({ ...f, password: e.target.value })}
-          />
-        </label>
-        {err && (
-          <p className="error" role="alert">
-            {err}
+    <div className="auth auth-login">
+      <div className="auth-login-frame">
+        <section className="auth-login-story">
+          <Brand />
+          <div className="auth-login-story-copy">
+            <small className="eyebrow">YOUR NEXT CHAPTER, ONLINE</small>
+            <h1>
+              Your story deserves a <i>place.</i>
+            </h1>
+            <p>
+              Bring your work, experience, and ideas together in one personal
+              space online.
+            </p>
+            <div className="auth-login-preview">
+              <span>ONE LINK, ALL OF YOU</span>
+              <strong>A home for the work you want the world to see.</strong>
+              <ArrowUpRight size={18} />
+            </div>
+          </div>
+          <small className="auth-login-caption">
+            PERSONAL BRANDING BY PRAKASH SAAS
+          </small>
+        </section>
+        <form className="auth-login-form" onSubmit={submit}>
+          <small className="eyebrow">WELCOME BACK</small>
+          <h2>Sign in to your space.</h2>
+          <p>Use your email and password, or continue with Google.</p>
+          <label>
+            Email address
+            <span className="auth-input-wrap">
+              <Mail size={17} aria-hidden="true" />
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                required
+                value={f.email}
+                onChange={(e) => F({ ...f, email: e.target.value })}
+              />
+            </span>
+          </label>
+          <label>
+            Password
+            <span className="auth-input-wrap">
+              <LockKeyhole size={17} aria-hidden="true" />
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                required
+                value={f.password}
+                onChange={(e) => F({ ...f, password: e.target.value })}
+              />
+              <button
+                className="auth-password-toggle"
+                type="button"
+                onClick={() => SP(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </span>
+          </label>
+          {err && (
+            <p className="error" role="alert">
+              {err}
+            </p>
+          )}
+          <button className="btn dark auth-login-submit">Log in →</button>
+          <div className="or-divider">
+            <span>OR CONTINUE WITH GOOGLE</span>
+          </div>
+          <GoogleSignIn onError={E} />
+          <p className="auth-login-new">
+            New here? <span>Continue with Google to create your account.</span>
           </p>
-        )}
-        <button className="btn dark">Log in →</button>
-        <div className="or-divider">
-          <span>OR CONTINUE WITH GOOGLE</span>
-        </div>
-        <GoogleSignIn onError={E} />
-      </form>
+        </form>
+      </div>
     </div>
   );
-}
-function PasswordSetupPage() {
+}function PasswordSetupPage() {
   const nav = useNavigate(),
     [user, U] = useState(null),
     [password, P] = useState(""),
@@ -695,12 +738,28 @@ function SavedStepSummary({ step, portfolio, onEdit, onNext }) {
     </section>
   );
 }
+function PublishedWebsiteLink({ url }) {
+  if (!url) return null;
+
+  return (
+    <a
+      className="published-site-link"
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      Open your published website <ArrowUpRight size={15} />
+    </a>
+  );
+}
+
 function Workspace() {
   const nav = useNavigate(),
     [p, P] = useState(null),
     [sub, S] = useState(null),
     [plans, PL] = useState([]),
     [publicDomain, PBD] = useState("localhost"),
+    [publicUrl, PU] = useState(""),
     [supportContacts, SC] = useState({}),
     [selectedPlanId, SPI] = useState("one-year"),
     [step, T] = useState(0),
@@ -726,6 +785,7 @@ function Workspace() {
       PL(b.data.plans || []);
       PBD(b.data.publicBaseDomain || "localhost");
       SC(b.data.supportContacts || {});
+      PU(b.data.publicUrl || "");
       SPI(
         b.data.subscription?.planId ||
           b.data.plans?.find((availablePlan) => availablePlan.amount > 0)?.id ||
@@ -801,6 +861,7 @@ function Workspace() {
         });
         S(a.data.subscription);
         if (a.data.portfolio) P(a.data.portfolio);
+        PU(a.data.publicUrl || "");
         M(
           a.data.published
             ? "Payment complete. Your personal brand website is live."
@@ -828,6 +889,7 @@ function Workspace() {
             const a = await api.post("/billing/verify", payment);
             S(a.data.subscription);
             if (a.data.portfolio) P(a.data.portfolio);
+            PU(a.data.publicUrl || "");
             M(
               a.data.published
                 ? "Payment complete. Your personal brand website is live."
@@ -1513,6 +1575,7 @@ function Workspace() {
                           <p className="published-status">
                             Your personal brand website is live.
                           </p>
+                          <PublishedWebsiteLink url={publicUrl} />
                           <SupportContacts contacts={supportContacts} />
                         </>
                       )}
@@ -1565,9 +1628,12 @@ function Workspace() {
                     </p>
                   ))}
                   {p.status === "published" && (
-                    <p className="published-status">
-                      Your website was published automatically after payment.
-                    </p>
+                    <div className="published-website-status">
+                      <p className="published-status">
+                        Your website was published automatically after payment.
+                      </p>
+                      <PublishedWebsiteLink url={publicUrl} />
+                    </div>
                   )}
                 </section>
               </div>
@@ -1601,7 +1667,10 @@ function Workspace() {
                 )}
                 {sub?.status === "active" ? (
                   p.status === "published" && (
-                    <SupportContacts contacts={supportContacts} />
+                    <>
+                      <PublishedWebsiteLink url={publicUrl} />
+                      <SupportContacts contacts={supportContacts} />
+                    </>
                   )
                 ) : (
                   <>
@@ -1738,11 +1807,31 @@ function Public() {
 }
 export default function App() {
   const host = window.location.hostname.toLowerCase();
+  const needsConfiguredDomain =
+    host.split(".").length > 2 && !host.endsWith(".localhost");
+  const [publicBaseDomain, setPublicBaseDomain] = useState("");
+  const [domainResolved, setDomainResolved] = useState(!needsConfiguredDomain);
 
-  const portfolioBaseDomains = [
-    "localhost",
-    "prakashsaas.com", // Replace with your actual portfolio base domain
-  ];
+  useEffect(() => {
+    if (!needsConfiguredDomain) return;
+
+    let active = true;
+    api
+      .get("/config")
+      .then((response) => {
+        if (active) {
+          setPublicBaseDomain(response.data.publicBaseDomain || "");
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setDomainResolved(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [needsConfiguredDomain]);
 
   const reserved = new Set([
     "www",
@@ -1765,12 +1854,11 @@ export default function App() {
     "ftp",
     "blog",
   ]);
-
+  const portfolioBaseDomains = ["localhost", publicBaseDomain].filter(Boolean);
   const isPublicPortfolioHost = portfolioBaseDomains.some((domain) => {
     if (!host.endsWith(`.${domain}`)) return false;
 
     const subdomain = host.slice(0, -(domain.length + 1));
-
     return (
       subdomain.length > 0 &&
       !subdomain.includes(".") &&
@@ -1778,10 +1866,17 @@ export default function App() {
     );
   });
 
-  if (isPublicPortfolioHost) {
-    return <Public />;
+  if (isPublicPortfolioHost) return <Public />;
+
+  if (!domainResolved) {
+    return (
+      <div className="loading">
+        <Brand />
+        <p>Opening your personal brand...</p>
+      </div>
+    );
   }
-  
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
