@@ -438,7 +438,8 @@ function LoginPage() {
       </div>
     </div>
   );
-}function PasswordSetupPage() {
+}
+function PasswordSetupPage() {
   const nav = useNavigate(),
     [user, U] = useState(null),
     [password, P] = useState(""),
@@ -1745,12 +1746,21 @@ function Public() {
     [p, P] = useState(null),
     [err, E] = useState("");
   useEffect(() => {
-    const host = location.hostname;
-    const isSubdomainRequest = !u && host.split(".").length > 2;
-    const request = isSubdomainRequest
-      ? api.get("/public-host")
-      : api.get("/public/" + u);
-    request
+    const host = location.hostname.toLowerCase();
+    const subdomainUsername = !u
+      ? host.endsWith(".localhost")
+        ? host.slice(0, -".localhost".length)
+        : host.split(".").length > 2
+          ? host.split(".")[0]
+          : ""
+      : "";
+    const username = u || subdomainUsername;
+    if (!username) {
+      E("This personal brand page is not available right now.");
+      return;
+    }
+    api
+      .get("/public/" + encodeURIComponent(username))
       .then((r) => {
         const v = r.data.portfolio;
         P(v);

@@ -1,34 +1,25 @@
 import cors from "cors";
 import { getPublicBaseDomain } from "../config/domains.js";
-
-const reservedHosts = new Set(
-  "www api admin clinic personal venues coaching salon support help dashboard login register static assets mail smtp ftp blog".split(
-    " ",
-  ),
-);
+import { usernameFromOrigin } from "../utils/publicHost.js";
 
 function isPortfolioSubdomain(origin) {
-  try {
-    const url = new URL(origin);
-    const host = url.hostname.toLowerCase();
-    const domain = getPublicBaseDomain();
+  return Boolean(
+    usernameFromOrigin(origin, [getPublicBaseDomain(), "localhost"]),
+  );
+}
 
-    if (domain === "localhost" && host.endsWith(".localhost")) {
-      const username = host.slice(0, -".localhost".length);
-      return Boolean(username && !username.includes(".") && !reservedHosts.has(username));
-    }
-
-    if (!host.endsWith(`.${domain}`)) return false;
-    const username = host.slice(0, -(domain.length + 1));
-    return Boolean(username && !username.includes(".") && !reservedHosts.has(username));
-  } catch {
-    return false;
+function isAllowedPublicOrigin(origin) {
+  if (!origin || isPortfolioSubdomain(origin)) return true;
+  const allowedOrigins = [process.env.CLIENT_URL];
+  if (process.env.NODE_ENV !== "production") {
+    allowedOrigins.push("http://localhost:5173", "http://127.0.0.1:5173");
   }
+  return allowedOrigins.includes(origin);
 }
 
 const publicPortfolioCors = cors({
   origin(origin, callback) {
-    if (!origin || isPortfolioSubdomain(origin)) return callback(null, true);
+    if (isAllowedPublicOrigin(origin)) return callback(null, true);
     return callback(null, false);
   },
   credentials: true,

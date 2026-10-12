@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { templates } from "./templates/registry.js";
+import { templateDefinitions } from "./templates/templateDefinitions.js";
 test("template registry includes three distinct portfolio looks", () =>
   assert.deepEqual(
-    templates.map((x) => x.id),
+    templateDefinitions.map((x) => x.id),
     ["minimal", "developer", "creative"],
   ));

@@ -9,13 +9,14 @@ import auth from "./routes/auth.js";
 import portfolio from "./routes/portfolio.js";
 import billing from "./routes/billing.js";
 import { corsMiddleware } from "./middleware/corsMiddleware.js";
+import { usernameFromHost, usernameFromOrigin } from "./utils/publicHost.js";
 import Portfolio from "./models/Portfolio.js";
 import PortfolioView from "./models/PortfolioView.js";
 import { validUsername, normalizeUsername } from "./utils/username.js";
 import { publicPortfolioProjection } from "./utils/publicPortfolio.js";
 import { webhook } from "./services/webhook.js";
 import { getPlans } from "./config/plans.js";
-import { getSupportContacts } from "./config/support.js";
+import { getPublicContacts } from "./config/support.js";
 import {
   getPublicBaseDomain,
   getPublicPortfolioUrl,
@@ -28,25 +29,33 @@ app.use(
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   }),
 );
-app.use("/api", corsMiddleware);
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [process.env.CLIENT_URL];
+const strictCors = cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = [process.env.CLIENT_URL];
 
-      if (process.env.NODE_ENV !== "production") {
-        allowedOrigins.push("http://localhost:5173", "http://127.0.0.1:5173");
-      }
+    if (process.env.NODE_ENV !== "production") {
+      allowedOrigins.push("http://localhost:5173", "http://127.0.0.1:5173");
+    }
 
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("Origin is not allowed by CORS."));
-    },
-    credentials: true,
-  }),
-);
+    return callback(new Error("Origin is not allowed by CORS."));
+  },
+  credentials: true,
+});
+app.use("/api", (req, res, next) => {
+  const isPublicReadRoute =
+    ["GET", "HEAD", "OPTIONS"].includes(req.method) &&
+    (req.path === "/config" ||
+      req.path === "/public-host" ||
+      req.path.startsWith("/public/"));
+
+  return isPublicReadRoute
+    ? corsMiddleware(req, res, next)
+    : strictCors(req, res, next);
+});
 app.post(
   "/api/webhooks/razorpay",
   express.raw({ type: "application/json" }),
@@ -70,7 +79,7 @@ app.get("/api/config", (_req, res) =>
   res.json({
     plans: getPlans(),
     publicBaseDomain: getPublicBaseDomain(),
-    support: getSupportContacts(),
+    support: getPublicContacts(),
     paymentSimulation:
       process.env.NODE_ENV !== "production" &&
       process.env.PAYMENT_SIMULATION_ENABLED === "true",
@@ -113,26 +122,18 @@ app.get("/api/public/:username", async (req, res, next) => {
 });
 app.get("/api/public-host", async (req, res, next) => {
   try {
-    const host = (req.headers.host || "").split(":")[0].toLowerCase();
     const baseDomains = [
       process.env.APP_BASE_DOMAIN || "localhost",
       getPublicBaseDomain(),
+      "localhost",
     ];
-    const matchingDomain = baseDomains.find((domain) =>
-      host.endsWith(`.${domain.toLowerCase()}`),
-    );
-    const prefix = matchingDomain
-      ? host.slice(0, -matchingDomain.length - 1)
-      : "";
-    const reserved = new Set(
-      "www api admin clinic personal venues coaching salon support help dashboard login register static assets mail smtp ftp blog".split(
-        " ",
-      ),
-    );
-    if (!prefix || prefix.includes(".") || reserved.has(prefix))
+    const username =
+      usernameFromOrigin(req.get("origin"), baseDomains) ||
+      usernameFromHost(req.get("host"), baseDomains);
+    if (!username)
       return res.status(404).json({ message: "No public portfolio host." });
     const p = await Portfolio.findOne({
-      username: prefix,
+      username,
       status: "published",
     }).lean();
     if (!p) return res.status(404).json({ message: "Portfolio not found." });
@@ -148,13 +149,13 @@ app.get("/api/public-host", async (req, res, next) => {
     const safe = publicPortfolioProjection(p);
     const day = new Date().toISOString().slice(0, 10);
     await PortfolioView.updateOne(
-      { username: prefix, day },
+      { username, day },
       { $inc: { views: 1 } },
       { upsert: true },
     );
     return res.json({
       portfolio: safe,
-      canonical: getPublicPortfolioUrl(prefix),
+      canonical: getPublicPortfolioUrl(username),
     });
   } catch (e) {
     next(e);

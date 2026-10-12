@@ -6,7 +6,7 @@ Independent local first portfolio SaaS for Prakash SaaS. New accounts start from
 
 Requirements: Node.js 20+ and MongoDB Community or a MongoDB Atlas URI.
 
-1. Copy `backend/.env.example` to `backend/.env` and `frontend/.env.example` to `frontend/.env`. Set a long random `JWT_SECRET`, `MONGO_URI`, and matching Google OAuth client IDs.
+1. Copy `backend/.env.example` to `backend/.env` and `frontend/.env.example` to `frontend/.env`. Set a long random `JWT_SECRET`, `MONGO_URI`, and matching Google OAuth client IDs. Configure `PUBLIC_NUMBER` and `PUBLIC_EMAIL` for the landing-page footer, and `PRIVATE_NUMBER` and `PRIVATE_EMAIL` for paid customer support.
 2. For offline checkout flow only, set `PAYMENT_SIMULATION_ENABLED=true` while `NODE_ENV=development`. Simulation is explicitly labeled, omitted in production, and disabled by default.
 3. Google sign-in is required to create a new account: set the same OAuth client id in backend `GOOGLE_CLIENT_ID` and frontend `VITE_GOOGLE_CLIENT_ID`. Google credentials and authorized JavaScript origins must be configured in Google Cloud Console. The backend verifies Google's ID token and verified-email claim before account creation. No email OTP provider is used.
 4. Optional Razorpay Test Mode: set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET`; leave simulation disabled.
@@ -34,7 +34,7 @@ The configured public suffix comes from `PUBLIC_BASE_DOMAIN` in `backend/.env` a
 
 Two backend-configured plans are available: 3 months (90 days) and 1 year (365 days). Set `PLAN_3_MONTHS_AMOUNT`, `PLAN_1_YEAR_AMOUNT`, and `PLAN_CURRENCY` in `backend/.env`; both amounts are in the configured currency. A plan with amount `0` is displayed as not configured and cannot be checked out. Razorpay uses one-time Orders with server-side HMAC checkout verification and raw-body webhook signature validation. A verified payment grants the selected fixed entitlement period; this implementation does not claim native recurring Razorpay Subscriptions. Renewal creates another order, with subscription history retained.
 
-After a customer has an active subscription and publishes their personal brand page, the subscription screens show the configured support contacts. Set `PRIVATE_NUMBER` (international format, digits used for the WhatsApp link) and `PRIVATE_EMAIL` in `backend/.env`.
+The public landing-page footer reads `PUBLIC_NUMBER` (international format) and `PUBLIC_EMAIL`. Paid customers see the private support contacts after publishing; set `PRIVATE_NUMBER` and `PRIVATE_EMAIL` for those. Keep public and private contacts separate in Render and local environment settings.
 
 ## Security and data
 

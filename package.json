@@ -8,8 +8,8 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix backend test && npm --prefix frontend test",
-    "format": "prettier --write \"backend/src/**/*.js\" \"backend/tests/**/*.js\" \"frontend/src/**/*.{js,jsx,css}\" \"frontend/index.html\" \"frontend/vite.config.js\" \"README.md\" \"docs/**/*.md\" \"package.json\" \"frontend/package.json\" \"backend/package.json\"",
-    "format:check": "prettier --check \"backend/src/**/*.js\" \"backend/tests/**/*.js\" \"frontend/src/**/*.{js,jsx,css}\" \"frontend/index.html\" \"frontend/vite.config.js\" \"README.md\" \"docs/**/*.md\" \"package.json\" \"frontend/package.json\" \"backend/package.json\""
+    "format": "prettier --write \"backend/src/**/*.js\" \"backend/tests/**/*.js\" \"frontend/src/**/*.{js,jsx,css}\" \"frontend/index.html\" \"frontend/vite.config.js\" \"README.md\" \"package.json\" \"frontend/package.json\" \"backend/package.json\"",
+    "format:check": "prettier --check \"backend/src/**/*.js\" \"backend/tests/**/*.js\" \"frontend/src/**/*.{js,jsx,css}\" \"frontend/index.html\" \"frontend/vite.config.js\" \"README.md\" \"package.json\" \"frontend/package.json\" \"backend/package.json\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
