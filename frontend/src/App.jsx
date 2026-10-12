@@ -26,7 +26,7 @@ import SupportContacts from "./components/SupportContacts.jsx";
 function Brand() {
   return (
     <Link className="brand" to="/">
-      <b>p.</b> prakash<span>saas</span>
+      <b>p</b> prakash<span>saas world</span>
     </Link>
   );
 }
