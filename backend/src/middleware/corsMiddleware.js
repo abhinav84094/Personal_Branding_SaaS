@@ -31,7 +31,7 @@ const publicPortfolioCors = cors({
     if (!origin || isPortfolioSubdomain(origin)) return callback(null, true);
     return callback(null, false);
   },
-  credentials: false,
+  credentials: true,
   methods: ["GET", "HEAD", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
   maxAge: 86400,
@@ -50,6 +50,6 @@ export function corsMiddleware(req, res, next) {
   return publicPortfolioCors(req, res, (error) => {
     if (error) return next(error);
     if (req.method === "OPTIONS") return res.sendStatus(204);
-    return next("router");
+    return next();
   });
 }
