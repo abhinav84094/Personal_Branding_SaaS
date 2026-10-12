@@ -1737,36 +1737,51 @@ function Public() {
   );
 }
 export default function App() {
-  const host = location.hostname.toLowerCase(),
-    label = host.split(".")[0],
-    reserved = [
-      "personal",
-      "www",
-      "api",
-      "admin",
-      "clinic",
-      "venues",
-      "coaching",
-      "salon",
-      "support",
-      "help",
-      "dashboard",
-      "login",
-      "register",
-      "static",
-      "assets",
-      "mail",
-      "smtp",
-      "ftp",
-      "blog",
-    ];
-  if (
-    (host.endsWith(".localhost") && !reserved.includes(label)) ||
-    (host !== "localhost" &&
-      host.split(".").length > 2 &&
-      !reserved.includes(label))
-  )
+  const host = window.location.hostname.toLowerCase();
+
+  const portfolioBaseDomains = [
+    "localhost",
+    "prakashsaas.com", // Replace with your actual portfolio base domain
+  ];
+
+  const reserved = new Set([
+    "www",
+    "api",
+    "admin",
+    "personal",
+    "clinic",
+    "venues",
+    "coaching",
+    "salon",
+    "support",
+    "help",
+    "dashboard",
+    "login",
+    "register",
+    "static",
+    "assets",
+    "mail",
+    "smtp",
+    "ftp",
+    "blog",
+  ]);
+
+  const isPublicPortfolioHost = portfolioBaseDomains.some((domain) => {
+    if (!host.endsWith(`.${domain}`)) return false;
+
+    const subdomain = host.slice(0, -(domain.length + 1));
+
+    return (
+      subdomain.length > 0 &&
+      !subdomain.includes(".") &&
+      !reserved.has(subdomain)
+    );
+  });
+
+  if (isPublicPortfolioHost) {
     return <Public />;
+  }
+  
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
