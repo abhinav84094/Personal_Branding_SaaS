@@ -21,6 +21,9 @@ import {
   getPublicBaseDomain,
   getPublicPortfolioUrl,
 } from "./config/domains.js";
+import siteMapfn from "./controller/siteMap.js"
+
+
 dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
@@ -161,6 +164,7 @@ app.get("/api/public-host", async (req, res, next) => {
     next(e);
   }
 });
+app.get("/api/sitemap.xml", siteMapfn);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use((err, _req, res, _next) => {
   if (err.name === "ValidationError")
