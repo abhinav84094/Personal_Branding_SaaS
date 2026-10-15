@@ -31,6 +31,12 @@ const siteMapfn = async (_req, res, next) => {
   </url>`;
     });
 
+    urls.unshift(`
+      <url>
+        <loc>https://${baseDomain}/</loc>
+      </url>
+    `);
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.join("\n")}
@@ -42,5 +48,7 @@ ${urls.join("\n")}
     next(error);
   }
 };
+
+
 
 export default siteMapfn;
