@@ -74,6 +74,11 @@ export function BillingHistory() {
                 {x.status} · {new Date(x.createdAt).toLocaleDateString()}
               </span>
               <small>
+                {x.kind === "template"
+                  ? x.planName + " · one-time template"
+                  : x.planName || "Publishing subscription"}
+              </small>
+              <small>
                 {x.provider === "simulation"
                   ? "Development simulation"
                   : "Razorpay"}

@@ -65,3 +65,27 @@ The following production-oriented requirements remain incomplete and need implem
 - Rate limiting currently covers auth routes. Production deployment still needs deployment-specific TLS, trusted proxy, API hostname, secure cookie, CSRF review, DNS/subdomain routing and monitoring configuration.
 
 This project is a local MVP foundation, not a verified production release.
+
+### Animated template purchases
+
+Aurora Motion and Kinetic Studio are optional animated designs, priced using **`animatedTemplatePrice` in `backend/.env` (INR, one-time per template)**. Users can preview them for free; server-verified payment unlocks selection. Publishing still requires an active publishing subscription. Live payments use the existing Razorpay keys and signed `payment.captured` webhook. Development simulation is blocked in production, and simulated template purchases do not unlock production access.
+
+Run `npm test` for template entitlement, payment validation, webhook replay, renderer and legacy compatibility checks. Live gateway checkout has not been exercised by these tests.
+
+Set `animatedTemplatePrice=5` in `backend/.env` (INR per template, at least 1, up to two decimal places). Restart the backend after editing the file. Catalog prices and new orders use this value; existing orders retain their original amount. Missing or invalid values disable new purchases without affecting existing ownership.
+
+### Password recovery
+
+Use **Forgot password?** on the login page, or **Reset password** in Settings. Verify the same Google identity used to create the account, then enter and confirm a new password. Password fields have explicit Show/Hide controls; saved passwords are never revealed.
+
+Recovery uses the existing `GOOGLE_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID` configuration and does not require email delivery. Only verified, matching Google accounts can start a reset. The HttpOnly reset cookie expires after 15 minutes; only its SHA-256 hash is stored. Reset tokens are single-use, password updates use bcrypt, and token-version changes invalidate prior login and setup sessions. Google account creation and normal login behavior are preserved.
+
+### Subscription landing and validity renewal
+
+Returning email/password and Google logins open `/app?tab=subscription`. New account password setup continues to the onboarding workspace.
+
+The Subscription tab displays a live validity countdown and an **Upgrade validity** button when fewer than 30 days remain (also available after expiry). It uses the same server-configured 90-day and 365-day plans shown during publishing. A future expiry is extended by the purchased duration; an expired plan starts from the verified payment time. The screen previews the resulting expiry before checkout.
+
+Subscription selection prefers active paid validity over newer pending orders. Verification, development simulation and signed capture webhooks use the same activation service. `SubscriptionTerm` stores one validity ledger per owner with a unique owner index and applied order IDs, so repeated callbacks do not add days again and distinct simultaneous renewals accumulate. Existing active subscriptions seed this ledger on first renewal; historic paid orders are not reapplied. Do not disable the unique owner index in production.
+
+Automated checks and local payment simulation cover renewal arithmetic, the 30-day boundary, expired plans, pending checkout visibility and callback replay. Real gateway renewal has not been exercised by these tests.

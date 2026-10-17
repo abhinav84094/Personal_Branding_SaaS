@@ -1,3 +1,4 @@
+import passwordReset from "./passwordReset.js";
 import { Router } from "express";
 import crypto from "node:crypto";
 import { OAuth2Client } from "google-auth-library";
@@ -6,6 +7,7 @@ import Portfolio from "../models/Portfolio.js";
 import { signSession, protect } from "../middleware/auth.js";
 import jwt from "jsonwebtoken";
 const r = Router();
+r.use(passwordReset);
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const cookieOptions = {
   httpOnly: true,

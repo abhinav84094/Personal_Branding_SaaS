@@ -1,4 +1,13 @@
-﻿import crypto from "node:crypto";
+import {
+  activateSubscription,
+  matchesCapturedSubscriptionPayment,
+} from "./subscriptionValidity.js";
+import TemplatePurchase from "../models/TemplatePurchase.js";
+import {
+  matchesCapturedTemplatePayment,
+  completeTemplatePurchase,
+} from "./templateAccess.js";
+import crypto from "node:crypto";
 import Subscription from "../models/Subscription.js";
 import { publishPortfolioAfterPayment } from "./publishing.js";
 export async function webhook(req, res) {
@@ -25,21 +34,34 @@ export async function webhook(req, res) {
   const payment = event.payload?.payment?.entity;
   if (!payment?.order_id || !payment?.id)
     return res.status(400).json({ message: "Invalid payment event." });
+  const purchase = await TemplatePurchase.findOne({
+    orderId: payment.order_id,
+    provider: "razorpay",
+  });
+  if (purchase) {
+    if (!matchesCapturedTemplatePayment(payment, purchase))
+      return res.status(400).json({
+        message: "Template payment amount, currency or status does not match.",
+      });
+    await completeTemplatePurchase(purchase, payment.id);
+    return res.json({ received: true, templateUnlocked: true });
+  }
   const sub = await Subscription.findOne({
     orderId: payment.order_id,
     provider: "razorpay",
   });
-  if (sub && !sub.processedEvents.includes(event.id || payment.id)) {
-    sub.processedEvents.push(event.id || payment.id);
-    if (sub.status !== "active") {
-      sub.status = "active";
-      sub.startsAt = new Date();
-      sub.endsAt = new Date(Date.now() + sub.periodDays * 86400000);
-      sub.paymentId = payment.id;
-    }
-    await sub.save();
+  let activated = sub;
+  if (sub) {
+    if (!matchesCapturedSubscriptionPayment(payment, sub))
+      return res
+        .status(400)
+        .json({
+          message:
+            "Subscription payment amount, currency or status does not match.",
+        });
+    activated = await activateSubscription(sub, payment.id);
   }
-  if (sub?.status === "active") {
+  if (activated?.status === "active") {
     await publishPortfolioAfterPayment(sub.ownerId);
   }
   res.json({ received: true });

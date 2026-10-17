@@ -24,6 +24,8 @@ const schema = new mongoose.Schema(
     amount: Number,
     currency: String,
     periodDays: Number,
+    renewal: { type: Boolean, default: false },
+    validityAppliedAt: Date,
     startsAt: Date,
     endsAt: Date,
     processedEvents: { type: [String], default: [] },

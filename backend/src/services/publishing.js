@@ -1,3 +1,5 @@
+import { TEMPLATE_IDS } from "../config/templates.js";
+import { hasTemplateAccess } from "./templateAccess.js";
 import Portfolio from "../models/Portfolio.js";
 import Subscription from "../models/Subscription.js";
 import { getPublicPortfolioUrl } from "../config/domains.js";
@@ -7,7 +9,7 @@ export function isPortfolioReadyToPublish(portfolio) {
     portfolio?.profile?.fullName?.trim() &&
     portfolio.profile.contactNumber?.trim() &&
     portfolio.username &&
-    ["minimal", "developer", "creative"].includes(portfolio.templateId),
+    TEMPLATE_IDS.includes(portfolio.templateId),
   );
 }
 
@@ -17,6 +19,8 @@ export async function publishPortfolioAfterPayment(ownerId) {
     return { portfolio, published: false, publicUrl: "" };
   }
 
+  if (!(await hasTemplateAccess(ownerId, portfolio.templateId)))
+    return { portfolio, published: false, publicUrl: "" };
   const activeSubscription = await Subscription.exists({
     ownerId,
     status: "active",

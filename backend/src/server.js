@@ -1,3 +1,5 @@
+import { hasTemplateAccess } from "./services/templateAccess.js";
+import { getTemplateCatalog } from "./config/templates.js";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -80,6 +82,7 @@ app.use("/api/portfolio", portfolio);
 app.use("/api/billing", billing);
 app.get("/api/config", (_req, res) =>
   res.json({
+    templates: getTemplateCatalog(),
     plans: getPlans(),
     publicBaseDomain: getPublicBaseDomain(),
     support: getPublicContacts(),
@@ -108,6 +111,7 @@ app.get("/api/public/:username", async (req, res, next) => {
       return res
         .status(404)
         .json({ message: "Portfolio not found or unavailable." });
+    if (!(await hasTemplateAccess(p.ownerId, p.templateId))) return res.status(404).json({message:'Portfolio not found or unavailable.'});
     const day = new Date().toISOString().slice(0, 10);
     await PortfolioView.updateOne(
       { username, day },
@@ -149,6 +153,7 @@ app.get("/api/public-host", async (req, res, next) => {
       }))
     )
       return res.status(404).json({ message: "Portfolio not found." });
+    if (!(await hasTemplateAccess(p.ownerId, p.templateId))) return res.status(404).json({message:'Portfolio not found or unavailable.'});
     const safe = publicPortfolioProjection(p);
     const day = new Date().toISOString().slice(0, 10);
     await PortfolioView.updateOne(

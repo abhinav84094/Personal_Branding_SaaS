@@ -1,0 +1,275 @@
+.ms-motion-aurora {
+  --ms-ink: #f2f1fa;
+  --ms-muted: #b7b6cf;
+  --ms-line: #36334e;
+  --ms-orange: #c3b2ff;
+  background: #111020;
+  color: var(--ms-ink);
+}
+.ms-motion-aurora .ms-hero {
+  position: relative;
+  isolation: isolate;
+}
+.ms-motion-aurora .ms-hero:before {
+  content: "";
+  position: absolute;
+  inset: 0 -24px;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 15% 30%, #6940ca40, transparent 60%),
+    radial-gradient(ellipse at 80% 60%, #087f8340, transparent 50%);
+  background-size: 160% 160%;
+  animation: aurora-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.ms-motion-aurora .ms-button {
+  background: #c3b2ff;
+  color: #161027;
+}
+.ms-motion-aurora .ms-button:hover {
+  background: #e1d8ff;
+}
+.ms-motion-aurora .ms-identity {
+  background: #232136;
+  border-color: #4b465d;
+  box-shadow: 0 28px 80px #05031166;
+  animation: identity-float 7s ease-in-out infinite;
+}
+.ms-motion-aurora .ms-identity-art {
+  background: #292342;
+}
+.ms-motion-aurora .ms-identity-art:before {
+  background: #7252bd;
+}
+.ms-motion-aurora .ms-identity-art:after,
+.ms-motion-aurora .ms-art-orbit {
+  border-color: #a18cce;
+}
+.ms-motion-aurora .ms-art-orbit {
+  animation: orbit-turn 22s linear infinite;
+}
+.ms-motion-aurora .ms-identity-caption span {
+  color: #c0bad2;
+}
+.ms-motion-aurora .ms-identity-art .ms-initials i {
+  color: #ded3ff;
+}
+.ms-motion-aurora .ms-project-art {
+  color: #272431;
+}
+.ms-motion-aurora .ms-skills span {
+  background: #28243d;
+  border-color: #48405f;
+}
+.ms-motion-aurora .ms-contact {
+  background: #27223b;
+}
+.ms-motion-aurora .ms-contact-arrow {
+  color: #191322 !important;
+}
+.ms-motion-aurora .ms-project-go:hover {
+  background: #c3b2ff;
+  color: #171127;
+}
+.ms-motion-kinetic {
+  --ms-orange: #a92d14;
+  background: #f8f6ed;
+}
+.ms-motion-kinetic .ms-identity {
+  animation: identity-float 7s ease-in-out infinite;
+}
+.ms-motion-kinetic .ms-art-star {
+  animation: star-turn 22s linear infinite;
+}
+.ms-motion-kinetic .ms-identity-art:before {
+  background: #e7f074;
+  border-radius: 24%;
+  animation: shape-morph 12s ease-in-out infinite alternate;
+}
+.ms-motion-kinetic .ms-initials i {
+  color: #ac321a;
+}
+.ms-motion-kinetic .ms-skill-strip {
+  border-top: 2px solid #292923;
+  border-bottom: 2px solid #292923;
+}
+.ms-motion-kinetic .ms-strip-star {
+  animation: star-turn 20s linear infinite;
+}
+.ms-motion-kinetic .ms-contact {
+  background: #edf0ce;
+}
+.ms-motion-aurora .ms-hero-copy,
+.ms-motion-kinetic .ms-hero-copy {
+  animation: motion-arrive 0.7s ease-out both;
+}
+.ms-motion-aurora .ms-project,
+.ms-motion-kinetic .ms-project {
+  transition: transform 0.25s ease;
+}
+.ms-motion-aurora .ms-project:hover,
+.ms-motion-kinetic .ms-project:hover {
+  transform: translateY(-6px);
+}
+.ms-motion-aurora .ms-project-go,
+.ms-motion-kinetic .ms-project-go {
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+.ms-motion-aurora .ms-project:hover .ms-project-go,
+.ms-motion-kinetic .ms-project:hover .ms-project-go {
+  transform: rotate(8deg);
+}
+.template-tile .motion-mini {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.motion-mini-aurora {
+  background: #19152d;
+  color: #f4eeff;
+}
+.template-tile .motion-mini-aurora > :is(small, span) {
+  color: #d4c9f0;
+}
+.motion-mini-kinetic {
+  background: #f0f2d7;
+  color: #25291c;
+}
+.motion-mini-orb {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  top: -55px;
+  right: -50px;
+  border-radius: 50%;
+  z-index: -1;
+  background: #60438b;
+  animation: mini-drift 9s ease-in-out infinite alternate;
+}
+.motion-mini-kinetic .motion-mini-orb {
+  background: #d5df6c;
+  border-radius: 24%;
+}
+.template-tile .motion-mini-note {
+  font-size: 11px;
+  line-height: 1.5;
+}
+@keyframes aurora-drift {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 70%;
+  }
+}
+@keyframes identity-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(3deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+@keyframes orbit-turn {
+  from {
+    transform: rotate(-38deg);
+  }
+  to {
+    transform: rotate(322deg);
+  }
+}
+@keyframes star-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes shape-morph {
+  from {
+    border-radius: 24%;
+    transform: rotate(0);
+  }
+  to {
+    border-radius: 50%;
+    transform: rotate(35deg);
+  }
+}
+@keyframes motion-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes mini-drift {
+  to {
+    transform: translate(-20px, 25px) scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ms-motion-aurora *,
+  .ms-motion-aurora *:before,
+  .ms-motion-aurora *:after,
+  .ms-motion-kinetic *,
+  .ms-motion-kinetic *:before,
+  .ms-motion-kinetic *:after,
+  .motion-mini * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  .ms-motion-aurora *,
+  .ms-motion-aurora *:before,
+  .ms-motion-kinetic * {
+    animation: none !important;
+  }
+}
+
+.ms-motion-control {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+.ms-motion-control button {
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid var(--ms-line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--ms-ink);
+  font: inherit;
+  font-size: 12px;
+}
+.ms-motion-paused *,
+.ms-motion-paused *:before,
+.ms-motion-paused *:after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+.ms-motion-paused .ms-hero-copy {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+/* Keep decorative motion clipped inside each premium preview card. */
+.template-tile .tile-preview.motion-mini {
+  overflow: hidden;
+  isolation: isolate;
+}
+.template-tile .tile-preview.motion-mini-aurora {
+  background: #19152d;
+  color: #f4eeff;
+}
+.template-tile .tile-preview.motion-mini-kinetic {
+  background: #f0f2d7;
+  color: #25291c;
+}
+.template-tile .tile-preview.motion-mini-aurora > :is(small, span) {
+  color: #d4c9f0;
+}

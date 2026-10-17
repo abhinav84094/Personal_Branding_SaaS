@@ -14,6 +14,8 @@ const schema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 8 },
     passwordConfigured: { type: Boolean, default: true },
     googleId: { type: String, sparse: true, unique: true },
+    passwordResetTokenHash: { type: String, select: false, index: true },
+    passwordResetExpiresAt: { type: Date, select: false },
     tokenVersion: { type: Number, default: 0 },
   },
   { timestamps: true },

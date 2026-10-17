@@ -1,4 +1,11 @@
-﻿import { Router } from "express";
+import { getCurrentSubscription } from "../services/subscriptionValidity.js";
+import {
+  hasTemplateAccess,
+  getTemplateAccessCatalog,
+  templatePaymentRequired,
+} from "../services/templateAccess.js";
+import { TEMPLATE_IDS } from "../config/templates.js";
+import { Router } from "express";
 import Portfolio from "../models/Portfolio.js";
 import PortfolioView from "../models/PortfolioView.js";
 import Subscription from "../models/Subscription.js";
@@ -31,6 +38,11 @@ r.patch("/me", async (req, res, next) => {
         message: "Some portfolio details are invalid.",
         errors: parsed.error.issues,
       });
+    if (
+      parsed.data.templateId &&
+      !(await hasTemplateAccess(req.user._id, parsed.data.templateId))
+    )
+      return res.status(402).json(templatePaymentRequired);
     const p = await Portfolio.findOneAndUpdate(
       { ownerId: req.user._id },
       { $set: parsed.data },
@@ -119,12 +131,21 @@ r.put("/username", async (req, res, next) => {
     next(e);
   }
 });
+r.get("/templates", async (req, res, next) => {
+  try {
+    res.json({ templates: await getTemplateAccessCatalog(req.user._id) });
+  } catch (e) {
+    next(e);
+  }
+});
 r.put("/template", async (req, res, next) => {
   try {
-    if (!["minimal", "developer", "creative"].includes(req.body.templateId))
+    if (!TEMPLATE_IDS.includes(req.body.templateId))
       return res
         .status(400)
         .json({ message: "Choose one of the available templates." });
+    if (!(await hasTemplateAccess(req.user._id, req.body.templateId)))
+      return res.status(402).json(templatePaymentRequired);
     const p = await Portfolio.findOneAndUpdate(
       { ownerId: req.user._id },
       { $set: { templateId: req.body.templateId } },
@@ -142,12 +163,14 @@ r.post("/publish", async (req, res, next) => {
       !p?.profile?.fullName?.trim() ||
       !p.profile.contactNumber?.trim() ||
       !p.username ||
-      !["minimal", "developer", "creative"].includes(p.templateId)
+      !TEMPLATE_IDS.includes(p.templateId)
     )
       return res.status(400).json({
         message:
           "Add your name and contact number, choose a username and template before publishing.",
       });
+    if (!(await hasTemplateAccess(req.user._id, p.templateId)))
+      return res.status(402).json(templatePaymentRequired);
     const sub = await Subscription.findOne({
       ownerId: req.user._id,
       status: "active",
@@ -185,17 +208,7 @@ r.post("/unpublish", async (req, res, next) => {
 });
 r.get("/subscription", async (req, res, next) => {
   try {
-    const subscription = await Subscription.findOne({
-      ownerId: req.user._id,
-    }).sort({ createdAt: -1 });
-    if (
-      subscription?.status === "active" &&
-      subscription.endsAt &&
-      subscription.endsAt <= new Date()
-    ) {
-      subscription.status = "expired";
-      await subscription.save();
-    }
+    const subscription = await getCurrentSubscription(req.user._id);
     const portfolio = await Portfolio.findOne({ ownerId: req.user._id })
       .select("username status")
       .lean();
@@ -208,10 +221,12 @@ r.get("/subscription", async (req, res, next) => {
           : getPublicPortfolioUrl(portfolio.username)
         : "";
     res.json({
+      templates: await getTemplateAccessCatalog(req.user._id),
       plans: getPlans(),
       publicBaseDomain: getPublicBaseDomain(),
       supportContacts: getSupportContacts(),
       subscription,
+      serverTime: new Date().toISOString(),
       publicUrl,
     });
   } catch (e) {

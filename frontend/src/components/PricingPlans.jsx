@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 const features = [
   "Your own personal brand URL",
-  "All available responsive templates",
+  "All standard responsive templates",
   "Edit your personal brand anytime",
   "Privacy-first view analytics",
 ];
@@ -57,6 +57,10 @@ export default function PricingPlans({
                 </li>
               ))}
             </ul>
+            <p className="premium-plan-note">
+              Animated templates are sold separately as one-time purchases. See
+              the template gallery for current prices.
+            </p>
             {publicMode ? (
               <Link className="btn dark" to="/login">
                 Build your personal brand →

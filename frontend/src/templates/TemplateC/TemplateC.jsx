@@ -1,3 +1,4 @@
+import { AudienceDetails } from "../AudienceDetails.jsx";
 import React from "react";
 import {
   AboutSection,
@@ -20,6 +21,7 @@ export default function TemplateC({ portfolio = {}, preview = false }) {
         socials={portfolio.socials}
       />
       <PortfolioHero profile={profile} />
+      <AudienceDetails profile={profile} />
       <AboutSection bio={profile.bio} />
       <ProjectsSection projects={portfolio.projects} />
       <SkillsSection skills={portfolio.skills} />

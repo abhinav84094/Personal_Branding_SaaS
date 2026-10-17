@@ -1,5 +1,30 @@
+import SubscriptionPanel from "./components/SubscriptionPanel.jsx";
+import { checkoutSubscription } from "./components/subscriptionCheckout.js";
+import PasswordField from "./components/PasswordField.jsx";
+import {
+  ForgotPasswordPage,
+  ResetPasswordPage,
+} from "./components/PasswordReset.jsx";
+import { formatTemplatePrice } from "./components/templatePrice.js";
+import PremiumTemplateCard from "./components/PremiumTemplateCard.jsx";
+import { AnimatedTemplatePreview } from "./templates/Animated/AnimatedTemplates.jsx";
+import { checkoutTemplate } from "./components/templateCheckout.js";
+import { ModernStudioPreview } from "./templates/ModernStudio/ModernStudio.jsx";
+import AudienceChoice from "./components/AudienceChoice.jsx";
+import {
+  audienceFields,
+  fieldLabels,
+  recommendedTemplate,
+} from "./audience.js";
 import React, { useEffect, useState } from "react";
-import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -32,6 +57,7 @@ function Brand() {
 }
 function Landing() {
   const [offers, O] = useState([]);
+  const [publicTemplates, PT] = useState([]);
   const [publicDomain, PD] = useState("localhost");
   const [support, setSupport] = useState({
     displayNumber: "",
@@ -43,6 +69,7 @@ function Landing() {
       .get("/config")
       .then((r) => {
         O(r.data.plans || []);
+        PT(r.data.templates || []);
         PD(r.data.publicBaseDomain || "localhost");
         setSupport(
           r.data.support || {
@@ -142,7 +169,7 @@ function Landing() {
               <span className="feature-icon">
                 {[<Layers />, <Check />, <Eye />][i]}
               </span>
-              <small>0{i + 1} — MADE FOR YOU</small>
+              <small>{String(i + 1).padStart(2, "0")} — MADE FOR YOU</small>
               <h3>{h}</h3>
               <p>{p}</p>
             </article>
@@ -150,39 +177,37 @@ function Landing() {
         </div>
       </section>
       <section id="templates" className="section tinted">
-        <small className="eyebrow">THREE WAYS TO BE YOU</small>
+        <small className="eyebrow">A LOOK FOR EVERY STORY</small>
         <h2>
           Find your kind of <i>different.</i>
         </h2>
         <div className="template-grid">
           {templates.map((t, i) => (
             <Link to="/login" className={"template-tile " + t.id} key={t.id}>
-              <div className="tile-preview">
-                <small>0{i + 1} / TEMPLATE</small>
-                <h3>
-                  {i === 0 ? (
-                    <>
-                      A thoughtful
-                      <br />
-                      <i>creative.</i>
-                    </>
-                  ) : i === 1 ? (
-                    <>
-                      Building things
-                      <br />
-                      <em>for the web.</em>
-                    </>
-                  ) : (
-                    <>
-                      Ideas into
-                      <br />
-                      <i>something.</i>
-                    </>
-                  )}
-                </h3>
-                <span>DESIGNER · MAKER · CREATOR</span>
-              </div>
-              <b>{t.name}</b>
+              {t.premium ? (
+                <AnimatedTemplatePreview template={t} />
+              ) : t.id === "modern" ? (
+                <ModernStudioPreview />
+              ) : (
+                <div className="tile-preview">
+                  <small>{String(i + 1).padStart(2, "0")} / TEMPLATE</small>
+                  <h3>{t.name}</h3>
+                  <span>{t.copy}</span>
+                </div>
+              )}
+              <b>
+                {t.name}
+                {t.premium
+                  ? " · " +
+                    (formatTemplatePrice(
+                      publicTemplates.find((item) => item.id === t.id),
+                    )
+                      ? formatTemplatePrice(
+                          publicTemplates.find((item) => item.id === t.id),
+                        ) + " one-time"
+                      : "Premium")
+                  : ""}
+              </b>
               <p>
                 {t.copy} <span>↗</span>
               </p>
@@ -300,7 +325,7 @@ function Landing() {
     </>
   );
 }
-function GoogleSignIn({ onError }) {
+function GoogleSignIn({ onError, purpose = "login" }) {
   const ref = React.useRef(null);
   useEffect(() => {
     const id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -311,10 +336,21 @@ function GoogleSignIn({ onError }) {
         client_id: id,
         callback: async (x) => {
           try {
-            const result = await api.post("/auth/google", {
-              credential: x.credential,
-            });
-            location.assign(result.data.needsPassword ? "/register" : "/app");
+            const result = await api.post(
+              purpose === "reset"
+                ? "/auth/password-reset/google"
+                : "/auth/google",
+              {
+                credential: x.credential,
+              },
+            );
+            location.assign(
+              purpose === "reset"
+                ? "/reset-password"
+                : result.data.needsPassword
+                  ? "/register"
+                  : "/app?tab=subscription",
+            );
           } catch (e) {
             onError(e.response?.data?.message || "Google sign-in failed.");
           }
@@ -351,7 +387,7 @@ function LoginPage() {
     e.preventDefault();
     try {
       await api.post("/auth/login", f);
-      nav("/app");
+      nav("/app?tab=subscription");
     } catch (x) {
       E(x.response?.data?.message || "Email or password is incorrect.");
     }
@@ -416,8 +452,10 @@ function LoginPage() {
                 type="button"
                 onClick={() => SP(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                <span>{showPassword ? "Hide" : "Show"}</span>
               </button>
             </span>
           </label>
@@ -426,6 +464,9 @@ function LoginPage() {
               {err}
             </p>
           )}
+          <Link className="forgot-password-link" to="/forgot-password">
+            Forgot password?
+          </Link>
           <button className="btn dark auth-login-submit">Log in →</button>
           <div className="or-divider">
             <span>OR CONTINUE WITH GOOGLE</span>
@@ -495,28 +536,16 @@ function PasswordSetupPage() {
           Google verified {user.email}. Choose a password for your account. Next
           time, you can sign in with this email and password.
         </p>
-        <label>
-          Password
-          <input
-            autoComplete="new-password"
-            type="password"
-            minLength="8"
-            maxLength="128"
-            required
-            value={password}
-            onChange={(e) => P(e.target.value)}
-          />
-        </label>
-        <label>
-          Confirm password
-          <input
-            autoComplete="new-password"
-            type="password"
-            required
-            value={confirm}
-            onChange={(e) => C(e.target.value)}
-          />
-        </label>
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={(e) => P(e.target.value)}
+        />
+        <PasswordField
+          label="Confirm password"
+          value={confirm}
+          onChange={(e) => C(e.target.value)}
+        />
         {err && (
           <p className="error" role="alert">
             {err}
@@ -552,75 +581,92 @@ function Entry({ name, list, change, project = false }) {
       </legend>
       {list.map((v, i) => (
         <div className="entry" key={i}>
-          <input
-            placeholder="Title"
-            value={v.title || ""}
-            onChange={(e) =>
-              change(
-                list.map((x, n) =>
-                  i === n ? { ...x, title: e.target.value } : x,
-                ),
-              )
-            }
-          />
-          <input
-            placeholder={project ? "Technologies" : "Organisation"}
-            value={
-              project ? (v.technologies || []).join(", ") : v.institution || ""
-            }
-            onChange={(e) =>
-              change(
-                list.map((x, n) =>
-                  i === n
-                    ? project
-                      ? {
-                          ...x,
-                          technologies: e.target.value
-                            .split(",")
-                            .map((a) => a.trim())
-                            .filter(Boolean),
-                        }
-                      : { ...x, institution: e.target.value }
-                    : x,
-                ),
-              )
-            }
-          />
-          <textarea
-            placeholder="A short description"
-            value={v.description || ""}
-            onChange={(e) =>
-              change(
-                list.map((x, n) =>
-                  i === n ? { ...x, description: e.target.value } : x,
-                ),
-              )
-            }
-          />
+          <label>
+            Title
+            <input
+              placeholder="Title"
+              value={v.title || ""}
+              onChange={(e) =>
+                change(
+                  list.map((x, n) =>
+                    i === n ? { ...x, title: e.target.value } : x,
+                  ),
+                )
+              }
+            />
+          </label>
+          <label>
+            {project ? "Tools / skills used" : "School / organisation"}
+            <input
+              placeholder={project ? "Technologies" : "Organisation"}
+              value={
+                project
+                  ? (v.technologies || []).join(", ")
+                  : v.institution || ""
+              }
+              onChange={(e) =>
+                change(
+                  list.map((x, n) =>
+                    i === n
+                      ? project
+                        ? {
+                            ...x,
+                            technologies: e.target.value
+                              .split(",")
+                              .map((a) => a.trim())
+                              .filter(Boolean),
+                          }
+                        : { ...x, institution: e.target.value }
+                      : x,
+                  ),
+                )
+              }
+            />
+          </label>
+          <label className="entry-description">
+            Description
+            <textarea
+              placeholder="A short description"
+              value={v.description || ""}
+              onChange={(e) =>
+                change(
+                  list.map((x, n) =>
+                    i === n ? { ...x, description: e.target.value } : x,
+                  ),
+                )
+              }
+            />
+          </label>
           {project && (
             <>
-              <input
-                placeholder="Live URL"
-                value={v.liveUrl || ""}
-                onChange={(e) =>
-                  change(
-                    list.map((x, n) =>
-                      i === n ? { ...x, liveUrl: e.target.value } : x,
-                    ),
-                  )
-                }
-              />
-              <input
-                placeholder="GitHub URL"
-                value={v.githubUrl || ""}
-                onChange={(e) =>
-                  change(
-                    list.map((x, n) =>
-                      i === n ? { ...x, githubUrl: e.target.value } : x,
-                    ),
-                  )
-                }
-              />
+              <label>
+                Live URL
+                <input
+                  placeholder="Live URL"
+                  value={v.liveUrl || ""}
+                  onChange={(e) =>
+                    change(
+                      list.map((x, n) =>
+                        i === n ? { ...x, liveUrl: e.target.value } : x,
+                      ),
+                    )
+                  }
+                />
+              </label>
+              <label>
+                GitHub URL
+                <input
+                  placeholder="GitHub URL"
+                  value={v.githubUrl || ""}
+                  onChange={(e) =>
+                    change(
+                      list.map((x, n) =>
+                        i === n ? { ...x, githubUrl: e.target.value } : x,
+                      ),
+                    )
+                  }
+                />
+              </label>
             </>
           )}
           <button
@@ -651,6 +697,9 @@ function SavedStepSummary({ step, portfolio, onEdit, onNext }) {
   const profile = portfolio.profile || {};
   const groups = {
     1: [
+      ["Category", profile.category],
+      ["Profession", profile.customProfession || profile.profession],
+      ...audienceFields(profile).map((key) => [fieldLabels[key], profile[key]]),
       ["Full name", profile.fullName],
       ["Contact number", profile.contactNumber],
       ["Professional title", profile.title],
@@ -755,9 +804,15 @@ function PublishedWebsiteLink({ url }) {
 }
 
 function Workspace() {
+  const [searchParams] = useSearchParams();
   const nav = useNavigate(),
     [p, P] = useState(null),
+    [templateAccess, TA] = useState([]),
+    [templatePreview, TP] = useState(null),
+    [buyingTemplate, BT] = useState(null),
     [sub, S] = useState(null),
+    [serverTime, ST] = useState(null),
+    [paying, PY] = useState(false),
     [plans, PL] = useState([]),
     [publicDomain, PBD] = useState("localhost"),
     [publicUrl, PU] = useState(""),
@@ -772,6 +827,13 @@ function Workspace() {
     [usernameSaved, US] = useState(false),
     [phone, H] = useState(false),
     [device, D] = useState("desktop");
+  const premiumPreviewRef = React.useRef(null);
+  useEffect(() => {
+    if (templatePreview && premiumPreviewRef.current) {
+      premiumPreviewRef.current.scrollIntoView({ block: "start" });
+      premiumPreviewRef.current.focus({ preventScroll: true });
+    }
+  }, [templatePreview]);
   async function load() {
     try {
       const [a, b] = await Promise.all([
@@ -780,9 +842,15 @@ function Workspace() {
       ]);
       P(a.data.portfolio);
       US(Boolean(a.data.portfolio.username));
-      T(a.data.portfolio.onboardingStep || 0);
+      T(
+        searchParams.get("tab") === "subscription"
+          ? 10
+          : a.data.portfolio.onboardingStep || 0,
+      );
       ES(null);
+      TA(b.data.templates || []);
       S(b.data.subscription);
+      ST(b.data.serverTime || new Date().toISOString());
       PL(b.data.plans || []);
       PBD(b.data.publicBaseDomain || "localhost");
       SC(b.data.supportContacts || {});
@@ -853,56 +921,76 @@ function Workspace() {
       E(e.response?.data?.message || "Username unavailable");
     }
   }
-  async function pay(planId = selectedPlanId) {
+  async function chooseTemplate(templateId) {
     try {
-      const r = await api.post("/billing/order", { planId });
-      if (r.data.mode === "simulation") {
-        const a = await api.post("/billing/simulate-success", {
-          orderId: r.data.orderId,
-        });
-        S(a.data.subscription);
-        if (a.data.portfolio) P(a.data.portfolio);
-        PU(a.data.publicUrl || "");
-        M(
-          a.data.published
-            ? "Payment complete. Your personal brand website is live."
-            : "Payment complete. Your website could not be published automatically.",
-        );
-        return;
-      }
-      if (!window.Razorpay) {
-        await new Promise((ok, no) => {
-          let x = document.createElement("script");
-          x.src = "https://checkout.razorpay.com/v1/checkout.js";
-          x.onload = ok;
-          x.onerror = no;
-          document.body.append(x);
-        });
-      }
-      new window.Razorpay({
-        key: r.data.keyId,
-        amount: r.data.plan.amount * 100,
-        currency: r.data.plan.currency,
-        order_id: r.data.orderId,
-        name: "Prakash SaaS",
-        handler: async (payment) => {
-          try {
-            const a = await api.post("/billing/verify", payment);
-            S(a.data.subscription);
-            if (a.data.portfolio) P(a.data.portfolio);
-            PU(a.data.publicUrl || "");
-            M(
-              a.data.published
-                ? "Payment complete. Your personal brand website is live."
-                : "Payment complete. Your website could not be published automatically.",
-            );
-          } catch (e) {
-            E(e.response?.data?.message || "Payment verification failed.");
-          }
-        },
-      }).open();
+      const r = await api.put("/portfolio/template", { templateId });
+      P(r.data.portfolio);
+      E("");
+      return true;
     } catch (e) {
-      E(e.response?.data?.message || "Unable to start checkout.");
+      E(
+        e.response?.data?.message ||
+          "Could not change your template. Please try again.",
+      );
+      return false;
+    }
+  }
+  async function buyTemplate(templateId) {
+    if (buyingTemplate) return;
+    BT(templateId);
+    E("");
+    try {
+      const result = await checkoutTemplate(templateId);
+      const { data } = await api.get("/portfolio/templates");
+      TA(data.templates || []);
+      const selected = await chooseTemplate(templateId);
+      TP(null);
+      M(
+        (result.simulated
+          ? "Development simulation complete. "
+          : "Payment verified. ") +
+          (selected
+            ? "Your animated template is unlocked and selected."
+            : "Your template is unlocked. Select it from the template list."),
+      );
+    } catch (e) {
+      E(
+        e.response?.data?.message ||
+          e.message ||
+          "Could not unlock this template. If you were charged, refresh to check your access.",
+      );
+    } finally {
+      BT(null);
+    }
+  }
+  async function pay(planId = selectedPlanId, renew = false) {
+    if (paying) return;
+    PY(true);
+    E("");
+    try {
+      const result = await checkoutSubscription(planId, renew);
+      S(result.subscription);
+      ST(result.serverTime || new Date().toISOString());
+      if (result.portfolio) P(result.portfolio);
+      PU(result.publicUrl || "");
+      M(
+        (result.simulated
+          ? "Development payment simulation complete. "
+          : "Payment verified. ") +
+          (renew
+            ? "Your validity has been extended."
+            : result.published
+              ? "Your personal brand website is live."
+              : "Your plan is active."),
+      );
+    } catch (e) {
+      E(
+        e.response?.data?.message ||
+          e.message ||
+          "Unable to complete checkout.",
+      );
+    } finally {
+      PY(false);
     }
   }
   if (!p)
@@ -923,7 +1011,7 @@ function Workspace() {
     ].filter(Boolean).length * 20;
   return (
     <div className="app-shell">
-      <aside className={phone ? "open" : ""}>
+      <aside id="workspace-navigation" className={phone ? "open" : ""}>
         <Brand />
         <button className="drawer-close" onClick={() => H(false)}>
           Close navigation ×
@@ -936,7 +1024,11 @@ function Workspace() {
           {steps.map((s, i) => (
             <button
               className={i === step ? "selected" : ""}
-              onClick={() => T(i)}
+              onClick={() => {
+                T(i);
+                H(false);
+              }}
+              aria-current={i === step ? "step" : undefined}
               key={s}
             >
               <span>{["⌂", "✎", "✳", "▧", "↗", "◎", "▦", "◉", "◇"][i]}</span>
@@ -959,6 +1051,8 @@ function Workspace() {
           <button
             className="mobile-toggle"
             aria-label="Toggle navigation"
+            aria-expanded={phone}
+            aria-controls="workspace-navigation"
             onClick={() => H(!phone)}
           >
             <Menu />
@@ -972,13 +1066,13 @@ function Workspace() {
         </header>
         <div className="work">
           {err && (
-            <div className="alert">
+            <div className="alert" role="alert">
               {err}
               <button onClick={() => E("")}>×</button>
             </div>
           )}
           {msg && (
-            <div className="success">
+            <div className="success" role="status">
               {msg}
               <button onClick={() => M("")}>×</button>
             </div>
@@ -1101,6 +1195,14 @@ function Workspace() {
                 <section className="panel form-panel">
                   {step === 1 && (
                     <div className="form-grid">
+                      <AudienceChoice
+                        profile={p.profile}
+                        onChange={setProfile}
+                      />
+                      <div className="form-section-title">
+                        <h2>Your essentials</h2>
+                        <p>Only your name and contact number are required.</p>
+                      </div>
                       <label>
                         Full name <em>REQUIRED</em>
                         <input
@@ -1125,12 +1227,53 @@ function Workspace() {
                           Private unless you switch on public display.
                         </small>
                       </label>
+                      {audienceFields(p.profile).length > 0 && (
+                        <fieldset className="audience-fields">
+                          <legend>
+                            {p.profile.category === "student"
+                              ? "Your studies & goals"
+                              : "Your professional details"}{" "}
+                            <small>Optional · shown on your portfolio</small>
+                          </legend>
+                          <div className="form-grid">
+                            {audienceFields(p.profile).map((key) => (
+                              <label key={key}>
+                                {fieldLabels[key]}
+                                <input
+                                  maxLength={280}
+                                  value={p.profile[key] || ""}
+                                  onChange={(e) =>
+                                    setProfile(key, e.target.value)
+                                  }
+                                  placeholder={
+                                    key === "graduationYear"
+                                      ? "e.g. 2027"
+                                      : key === "yearsExperience"
+                                        ? "e.g. 5 years"
+                                        : ""
+                                  }
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                      )}
+                      <div className="form-section-title">
+                        <h2>Introduce yourself</h2>
+                        <p>Optional details to help people get to know you.</p>
+                      </div>
                       <label>
-                        Professional title
+                        {p.profile.category === "student"
+                          ? "Headline / area of study"
+                          : "Professional title"}
                         <input
                           value={p.profile.title || ""}
                           onChange={(e) => setProfile("title", e.target.value)}
-                          placeholder="Product designer"
+                          placeholder={
+                            p.profile.category === "student"
+                              ? "e.g. Computer science student"
+                              : "e.g. Electrician or product designer"
+                          }
                         />
                       </label>
                       <label>
@@ -1236,7 +1379,12 @@ function Workspace() {
                         (g) => (
                           <Entry
                             key={g}
-                            name={g}
+                            name={
+                              g === "experience" &&
+                              p.profile.category === "student"
+                                ? "Internships & experience"
+                                : g
+                            }
                             list={p[g] || []}
                             change={(x) => P({ ...p, [g]: x })}
                           />
@@ -1246,7 +1394,15 @@ function Workspace() {
                   )}
                   {step === 3 && (
                     <Entry
-                      name="Projects"
+                      name={
+                        p.profile.category === "student"
+                          ? "Academic & personal projects"
+                          : ["Electrician", "Plumber"].includes(
+                                p.profile.profession,
+                              )
+                            ? "Completed jobs & work examples"
+                            : "Projects & selected work"
+                      }
                       list={p.projects || []}
                       change={(x) => P({ ...p, projects: x })}
                       project
@@ -1465,34 +1621,125 @@ function Workspace() {
               <h1>
                 A look that feels like <i>you.</i>
               </h1>
-              <div className="template-grid">
-                {templates.map((t, i) => (
-                  <button
-                    key={t.id}
-                    onClick={async () => {
-                      let r = await api.put("/portfolio/template", {
-                        templateId: t.id,
-                      });
-                      P(r.data.portfolio);
-                    }}
-                    className={
-                      "template-tile " +
-                      t.id +
-                      (p.templateId === t.id ? " chosen" : "")
+              <div className="premium-pricing-note">
+                <strong>Preview any design for free.</strong>
+                <p>
+                  Animated templates are paid once per template. See each card
+                  for its current price. Your purchases stay unlocked on your
+                  account. A separate active subscription is required to
+                  publish.
+                </p>
+                <button
+                  type="button"
+                  className="textbtn"
+                  onClick={async () => {
+                    try {
+                      const { data } = await api.get("/portfolio/templates");
+                      TA(data.templates || []);
+                      M("Template access refreshed.");
+                    } catch {
+                      E("Could not refresh template access. Please try again.");
                     }
-                  >
-                    <div className="tile-preview">
-                      <small>0{i + 1} / TEMPLATE</small>
-                      <h3>{t.name}</h3>
-                      <span>{t.copy}</span>
+                  }}
+                >
+                  Refresh purchase status ↻
+                </button>
+              </div>
+              {templatePreview && (
+                <section
+                  className="premium-preview-panel"
+                  ref={premiumPreviewRef}
+                  tabIndex={-1}
+                  aria-label="Animated template preview"
+                >
+                  <header>
+                    <div>
+                      <h2>
+                        {templates.find((t) => t.id === templatePreview)?.name}{" "}
+                        · Preview
+                      </h2>
+                      <p>Preview only. Your saved template has not changed.</p>
                     </div>
-                    <b>
-                      {p.templateId === t.id
-                        ? "✓ Selected"
-                        : "Choose this look →"}
-                    </b>
-                  </button>
-                ))}
+                    <button
+                      type="button"
+                      className="btn light"
+                      onClick={() => TP(null)}
+                    >
+                      Close preview ×
+                    </button>
+                  </header>
+                  <div className="premium-preview-scroll">
+                    <PortfolioView
+                      portfolio={{ ...p, templateId: templatePreview }}
+                      preview
+                    />
+                  </div>
+                </section>
+              )}
+              <div className="template-grid">
+                {templates.map((t, i) =>
+                  t.premium ? (
+                    <PremiumTemplateCard
+                      key={t.id}
+                      template={t}
+                      access={templateAccess.find((a) => a.id === t.id)}
+                      selected={p.templateId === t.id}
+                      busy={Boolean(buyingTemplate)}
+                      onPreview={() => TP(t.id)}
+                      onBuy={() => buyTemplate(t.id)}
+                      onSelect={() => chooseTemplate(t.id)}
+                    />
+                  ) : (
+                    <button
+                      key={t.id}
+                      aria-pressed={p.templateId === t.id}
+                      onClick={async () => {
+                        try {
+                          const r = await api.put("/portfolio/template", {
+                            templateId: t.id,
+                          });
+                          P(r.data.portfolio);
+                          E("");
+                        } catch (e) {
+                          E(
+                            e.response?.data?.message ||
+                              "Could not change your template. Please try again.",
+                          );
+                        }
+                      }}
+                      className={
+                        "template-tile " +
+                        t.id +
+                        (p.templateId === t.id ? " chosen" : "")
+                      }
+                    >
+                      {t.premium ? (
+                        <AnimatedTemplatePreview template={t} />
+                      ) : t.id === "modern" ? (
+                        <ModernStudioPreview />
+                      ) : (
+                        <div className="tile-preview">
+                          <small>
+                            {String(i + 1).padStart(2, "0")} / TEMPLATE
+                          </small>
+                          <h3>{t.name}</h3>
+                          {p.profile.category &&
+                            recommendedTemplate(p.profile) === t.id && (
+                              <small className="template-recommendation">
+                                Recommended for you
+                              </small>
+                            )}
+                          <span>{t.copy}</span>
+                        </div>
+                      )}
+                      <b>
+                        {p.templateId === t.id
+                          ? "✓ Selected"
+                          : "Choose this look →"}
+                      </b>
+                    </button>
+                  ),
+                )}
               </div>
               <p className="template-coming-soon">
                 More templates coming soon.
@@ -1642,70 +1889,26 @@ function Workspace() {
           )}{" "}
           {step === 9 && <AnalyticsPanel />}
           {step === 10 && (
-            <>
-              <small className="eyebrow">YOUR PLAN</small>
-              <h1>
-                {sub?.status === "active" ? (
-                  <>
-                    Your <i>active plan.</i>
-                  </>
-                ) : (
-                  <>
-                    Choose your <i>access period.</i>
-                  </>
-                )}
-              </h1>
-              <section className="panel">
-                <p>
-                  {sub?.status
-                    ? `Current plan: ${sub.planName || sub.planId || "Subscription"} · ${sub.status}`
-                    : "No active subscription yet."}
-                </p>
-                {sub?.endsAt && (
-                  <p>
-                    Valid through {new Date(sub.endsAt).toLocaleDateString()}
-                  </p>
-                )}
-                {sub?.status === "active" ? (
-                  p.status === "published" && (
-                    <>
-                      <PublishedWebsiteLink url={publicUrl} />
-                      <SupportContacts contacts={supportContacts} />
-                    </>
-                  )
-                ) : (
-                  <>
-                    <PricingPlans
-                      plans={plans}
-                      selectedPlanId={selectedPlanId}
-                      onSelect={SPI}
-                    />
-                    <button
-                      className="btn dark"
-                      disabled={
-                        !plans.some(
-                          (planOption) =>
-                            planOption.id === selectedPlanId &&
-                            planOption.amount > 0,
-                        )
-                      }
-                      onClick={() => pay(selectedPlanId)}
-                    >
-                      Activate{" "}
-                      {plans.find(
-                        (planOption) => planOption.id === selectedPlanId,
-                      )?.name || "selected plan"}{" "}
-                      →
-                    </button>
-                  </>
-                )}
-              </section>
-            </>
-          )}{" "}
+            <SubscriptionPanel
+              subscription={sub}
+              serverTime={serverTime}
+              plans={plans}
+              selectedPlanId={selectedPlanId}
+              onSelect={SPI}
+              onPay={pay}
+              busy={paying}
+              publicUrl={publicUrl}
+              supportContacts={supportContacts}
+              published={p.status === "published"}
+            />
+          )}
           {step === 11 && <BillingHistory />}
           {step === 12 && (
             <>
               <small className="eyebrow">PRIVACY & DISPLAY</small>
+              <Link className="settings-password-link" to="/forgot-password">
+                Reset password →
+              </Link>
               <h1>
                 Your details, <i>your call.</i>
               </h1>
@@ -1887,6 +2090,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/forgot-password"
+        element={<ForgotPasswordPage GoogleSignIn={GoogleSignIn} />}
+      />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/register" element={<PasswordSetupPage />} />
       <Route path="/app/*" element={<Workspace />} />
       <Route path="/p/:username" element={<Public />} />

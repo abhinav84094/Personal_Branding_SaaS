@@ -1,0 +1,498 @@
+/* Opal Glass — translucent bento panels and iridescent light. */
+.ms-motion-opal {
+  --ms-ink: #282845;
+  --ms-muted: #62617b;
+  --ms-line: #d9d6e8;
+  --ms-orange: #6a4bab;
+  background:
+    radial-gradient(ellipse at 5% 12%, #dcd1fa, transparent 45%),
+    radial-gradient(ellipse at 95% 32%, #c9e8e0, transparent 44%), #f4f1fa;
+}
+.ms-motion-opal .ms-hero {
+  gap: 28px;
+  align-items: stretch;
+  padding: 60px 0;
+}
+.ms-motion-opal .ms-hero-copy {
+  padding: 40px 32px;
+  border: 1px solid #fff;
+  border-radius: 26px;
+  background: #ffffffa8;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 15px 60px #78659a12;
+}
+.ms-motion-opal h1 {
+  font-size: clamp(38px, 4.8cqi, 66px);
+  letter-spacing: -0.06em;
+}
+.ms-motion-opal .ms-identity {
+  transform: none;
+  border-radius: 26px;
+  background: #ffffff88;
+  border-color: #fff;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ms-motion-opal .ms-identity-art {
+  border-radius: 18px;
+  background: linear-gradient(140deg, #dad3ee, #f1deea 50%, #c7e6dd);
+}
+.ms-motion-opal .ms-identity-art:before {
+  background: linear-gradient(135deg, #a68cdb, #c1b2ef 55%, #a5d5c9);
+  filter: blur(2px);
+  animation: opal-breathe 10s ease-in-out infinite alternate;
+}
+.ms-motion-opal .ms-art-orbit {
+  border-color: #9583b8;
+  animation: orbit-turn 30s linear infinite;
+}
+.ms-motion-opal .ms-initials {
+  color: #51416f;
+  text-shadow: 0 5px 30px #ffffff99;
+}
+.ms-motion-opal .ms-initials i {
+  color: #766097;
+}
+.ms-motion-opal .ms-button {
+  background: #66508e;
+  border-radius: 30px;
+  color: #fff;
+}
+.ms-motion-opal .ms-skill-strip {
+  background: #ffffff7a;
+  padding: 24px;
+  border: 1px solid #fff;
+  border-radius: 18px;
+}
+.ms-motion-opal .ms-project {
+  background: #ffffff85;
+  border: 1px solid #fff;
+  border-radius: 22px;
+  padding: 16px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.ms-motion-opal .ms-project:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px #58487218;
+}
+.ms-motion-opal .ms-project-art {
+  border-radius: 14px;
+}
+.ms-motion-opal .ms-project-info,
+.ms-motion-opal .ms-project > p {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.ms-motion-opal .ms-details {
+  padding: 24px;
+  background: #ffffff7a;
+  border: 1px solid #fff;
+  border-radius: 20px;
+}
+.ms-motion-opal .ms-skills span {
+  border-color: #d6d0e3;
+  background: #ffffff80;
+  border-radius: 25px;
+}
+.ms-motion-opal .ms-contact {
+  background: linear-gradient(120deg, #e5dff2, #d7e9e1);
+  border: 1px solid #fff;
+  border-radius: 26px;
+}
+
+/* Noir Atelier — a centered editorial composition with a quiet gold glow. */
+.ms-motion-noir {
+  --ms-ink: #f4eee3;
+  --ms-muted: #bcb8af;
+  --ms-line: #3f3c35;
+  --ms-orange: #d7bd7b;
+  background: #171715;
+}
+.ms-motion-noir .ms-nav {
+  min-height: 100px;
+}
+.ms-motion-noir .ms-brand {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: 21px;
+}
+.ms-motion-noir .ms-brand-symbol {
+  animation: star-turn 36s linear infinite;
+}
+.ms-motion-noir .ms-hero {
+  grid-template-columns: minmax(0, 1fr);
+  text-align: center;
+  gap: 34px;
+  padding: 56px 0 80px;
+  position: relative;
+  isolation: isolate;
+}
+.ms-motion-noir .ms-hero:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 35%, #9b793e22, transparent 63%);
+  animation: noir-glow 10s ease-in-out infinite alternate;
+}
+.ms-motion-noir .ms-hero-copy {
+  max-width: 850px;
+  margin: 0 auto;
+}
+.ms-motion-noir .ms-hero h1 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: clamp(44px, 7.5cqi, 96px);
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+.ms-motion-noir .ms-intro {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 560px;
+}
+.ms-motion-noir .ms-hero-actions,
+.ms-motion-noir .ms-location {
+  justify-content: center;
+}
+.ms-motion-noir .ms-identity {
+  grid-row: 1;
+  width: 120px;
+  padding: 0;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid #aa925e;
+  transform: none;
+  box-shadow: 0 0 0 10px #bfa57708;
+  animation: noir-medallion 9s ease-in-out infinite;
+}
+.ms-motion-noir .ms-identity-art {
+  border-radius: 50%;
+  aspect-ratio: 1;
+  background: #363124;
+}
+.ms-motion-noir .ms-identity-art:before {
+  background: #8c7649;
+  opacity: 0.6;
+}
+.ms-motion-noir .ms-identity-caption,
+.ms-motion-noir .ms-art-label,
+.ms-motion-noir .ms-art-star {
+  display: none;
+}
+.ms-motion-noir .ms-initials {
+  font-size: 55px;
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  transform: none;
+}
+.ms-motion-noir .ms-art-orbit {
+  border-color: #af9560;
+}
+.ms-motion-noir .ms-button {
+  background: #d7bd7b;
+  color: #211d14;
+  border-radius: 0;
+}
+.ms-motion-noir .ms-button:hover {
+  background: #ebd8a6;
+}
+.ms-motion-noir .ms-skill-strip {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ms-motion-noir .ms-section h2,
+.ms-motion-noir .ms-contact h2 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+}
+.ms-motion-noir .ms-project-art {
+  filter: grayscale(1);
+  border-radius: 0;
+  color: #262620;
+  transition: filter 0.4s ease;
+}
+.ms-motion-noir .ms-project:hover .ms-project-art {
+  filter: grayscale(0);
+}
+.ms-motion-noir .ms-project-shape {
+  opacity: 0.5;
+}
+.ms-motion-noir .ms-project-info h3 {
+  font-family: "DM Serif Display", serif;
+  font-size: 27px;
+}
+.ms-motion-noir .ms-project-go:hover {
+  background: #d7bd7b;
+  color: #211d14;
+}
+.ms-motion-noir .ms-skills span {
+  background: #25241f;
+  border-color: #4a4539;
+  border-radius: 0;
+}
+.ms-motion-noir .ms-contact {
+  background: #24221c;
+  border: 1px solid #514731;
+  border-radius: 0;
+}
+.ms-motion-noir .ms-contact-arrow {
+  color: #211d14 !important;
+}
+
+/* Terra Bloom — organic geometry, a sage canvas and warm terracotta. */
+.ms-motion-terra {
+  --ms-ink: #283c2e;
+  --ms-muted: #5e6d60;
+  --ms-line: #d0d7c9;
+  --ms-orange: #a5472d;
+  background: #edf0e5;
+}
+.ms-motion-terra .ms-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 60px;
+}
+.ms-motion-terra h1 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: clamp(42px, 6.2cqi, 78px);
+  letter-spacing: -0.045em;
+}
+.ms-motion-terra .ms-identity {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  transform: none;
+}
+.ms-motion-terra .ms-identity-art {
+  border-radius: 48% 48% 6px 6px;
+  background: #d7decb;
+  aspect-ratio: 0.9;
+  border: 1px solid #c1cbb3;
+}
+.ms-motion-terra .ms-identity-art:before {
+  background: #b77353;
+  border-radius: 42% 58% 60% 40%;
+  right: -15%;
+  top: 16%;
+  animation: terra-bloom 12s ease-in-out infinite alternate;
+}
+.ms-motion-terra .ms-identity-art:after {
+  border-color: #8c9c7c;
+}
+.ms-motion-terra .ms-art-orbit {
+  border-color: #7e8e72;
+  animation: orbit-turn 36s linear infinite;
+}
+.ms-motion-terra .ms-art-star {
+  color: #4c6243;
+  animation: terra-sway 8s ease-in-out infinite alternate;
+}
+.ms-motion-terra .ms-initials {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+}
+.ms-motion-terra .ms-identity-caption {
+  padding: 22px 8px 0;
+}
+.ms-motion-terra .ms-button {
+  border-radius: 40px;
+  background: #344c39;
+}
+.ms-motion-terra .ms-button:hover {
+  background: #a5472d;
+}
+.ms-motion-terra .ms-skill-strip {
+  padding: 22px 24px;
+  border-radius: 60px;
+  background: #dfe5d4;
+  border: 0;
+}
+.ms-motion-terra .ms-project-art {
+  border-radius: 70px 8px 8px 8px;
+  background: #dce2ce;
+}
+.ms-motion-terra .ms-project:nth-child(even) .ms-project-art {
+  border-radius: 8px 70px 8px 8px;
+  background: #e8d7c8;
+}
+.ms-motion-terra .ms-project-shape {
+  border-color: #778b62;
+}
+.ms-motion-terra .ms-project-1 .ms-project-shape {
+  border-color: #b77353;
+}
+.ms-motion-terra .ms-project {
+  transition: transform 0.3s ease;
+}
+.ms-motion-terra .ms-project:hover {
+  transform: translateY(-5px);
+}
+.ms-motion-terra .ms-skills span {
+  border-radius: 25px;
+  background: #e1e7d6;
+  border-color: #c6d0bb;
+}
+.ms-motion-terra .ms-contact {
+  background: #dce3d0;
+  border-radius: 70px 8px 8px 8px;
+}
+
+/* Catalog previews use the same palette and motion language as their template. */
+.template-tile .tile-preview.motion-mini-opal {
+  background: linear-gradient(135deg, #e5d9f6, #e1f0e9);
+  color: #352c4e;
+}
+.motion-mini-opal .motion-mini-orb {
+  background: linear-gradient(135deg, #ad8dd2, #b7dfd2);
+  border-radius: 40%;
+  filter: blur(3px);
+}
+.template-tile .tile-preview.motion-mini-noir {
+  background: #1a1916;
+  color: #f4eee3;
+  text-align: center;
+  align-items: center;
+}
+.template-tile .tile-preview.motion-mini-noir > :is(small, span) {
+  color: #d7c99f;
+}
+.motion-mini-noir .motion-mini-orb {
+  width: 120px;
+  height: 120px;
+  background: transparent;
+  border: 1px solid #a58b55;
+  top: -35px;
+  right: -35px;
+  box-shadow:
+    0 0 0 20px #a58b5510,
+    0 0 0 40px #a58b5509;
+}
+.template-tile .tile-preview.motion-mini-terra {
+  background: #e1e7d6;
+  color: #293d2c;
+}
+.motion-mini-terra .motion-mini-orb {
+  background: #c49072;
+  border-radius: 45% 55% 30% 60%;
+}
+@keyframes opal-breathe {
+  from {
+    transform: translateY(-12px) scale(0.9);
+    border-radius: 40%;
+  }
+  to {
+    transform: translateY(18px) scale(1.12);
+    border-radius: 55%;
+  }
+}
+@keyframes noir-glow {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes noir-medallion {
+  0%,
+  100% {
+    box-shadow: 0 0 0 10px #bfa57708;
+  }
+  50% {
+    box-shadow: 0 0 0 18px #bfa57712;
+  }
+}
+@keyframes terra-bloom {
+  from {
+    transform: rotate(-12deg) scale(0.9);
+    border-radius: 42% 58% 60% 40%;
+  }
+  to {
+    transform: rotate(12deg) scale(1.05);
+    border-radius: 58% 42% 40% 60%;
+  }
+}
+@keyframes terra-sway {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(12deg);
+  }
+}
+@container modern (max-width:900px) {
+  .ms-motion-opal .ms-hero {
+    gap: 20px;
+  }
+  .ms-motion-opal .ms-hero-copy {
+    padding: 28px 24px;
+  }
+  .ms-motion-terra .ms-hero {
+    gap: 30px;
+  }
+}
+@container modern (max-width:620px) {
+  .ms-motion-opal .ms-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 32px 0;
+  }
+  .ms-motion-opal .ms-hero-copy {
+    padding: 28px 22px;
+  }
+  .ms-motion-opal h1 {
+    font-size: clamp(34px, 9cqi, 52px);
+  }
+  .ms-motion-opal .ms-identity {
+    width: 100%;
+  }
+  .ms-motion-opal .ms-details {
+    padding: 18px;
+  }
+  .ms-motion-noir .ms-hero {
+    padding: 38px 0 52px;
+    gap: 26px;
+  }
+  .ms-motion-noir .ms-hero h1 {
+    font-size: clamp(40px, 11cqi, 66px);
+  }
+  .ms-motion-noir .ms-initials {
+    font-size: 55px;
+  }
+  .ms-motion-terra .ms-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 38px;
+  }
+  .ms-motion-terra h1 {
+    font-size: clamp(40px, 10cqi, 62px);
+  }
+  .ms-motion-terra .ms-contact {
+    border-radius: 36px 8px 8px 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modern-site[class*="ms-motion-"] *,
+  .modern-site[class*="ms-motion-"] *:before,
+  .modern-site[class*="ms-motion-"] *:after,
+  .motion-mini * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  .modern-site[class*="ms-motion-"] *,
+  .modern-site[class*="ms-motion-"] *:before,
+  .modern-site[class*="ms-motion-"] *:after {
+    animation: none !important;
+  }
+}
